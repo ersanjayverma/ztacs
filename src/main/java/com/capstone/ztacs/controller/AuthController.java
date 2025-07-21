@@ -3,7 +3,6 @@ package com.capstone.ztacs.controller;
 import com.capstone.ztacs.dto.KeycloakTokenRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -33,7 +32,6 @@ public class AuthController {
         description = "Authenticates with Keycloak and returns JWT token"
     )
     @PostMapping("/get-token")
-    @PermitAll
     public ResponseEntity<?> getToken(@RequestBody KeycloakTokenRequest request) {
         String domain = env.getProperty("auth0.domain");
         String clientId = env.getProperty("auth0.clientId");
@@ -74,7 +72,6 @@ public class AuthController {
     }
 
     @GetMapping("/ping")
-    @PermitAll
     @Operation(summary = "Ping endpoint", description = "Just returns OK")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("Auth service is up");

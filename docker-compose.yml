@@ -1,0 +1,20 @@
+services:
+  app:
+    image: vermasj/capstone:latest  # Use prebuilt image, no build section
+    container_name: ztacs-app
+    ports:
+      - "8083:7017"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://ztacs-mysql:3306/ztacsdb?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ztacsuser
+      SPRING_DATASOURCE_PASSWORD: ztacspass
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: https://auth.blackhatbadshah.com/realms/ztacs/
+      AUTH0_DOMAIN: https://auth.blackhatbadshah.com/realms/ztacs/
+      AUTH0_CLIENTID: ZTACS-API
+      AUTH0_CLIENTSECRET: NlMTJFFiUZE1JgfFnqbFY5L1zL4R7AyN
+    networks:
+      - data_ztacs
+
+networks:
+  data_ztacs:
+    external: true

@@ -1,11 +1,12 @@
 package com.capstone.ztacs.controller;
 
-import com.capstone.ztacs.dto.KeycloakTokenRequest;
+import com.capstone.ztacs.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
+import com.capstone.ztacs.service.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,12 @@ public class AuthController {
 
     private final RestTemplate restTemplate;
     private final Environment env;
-
+    private final KeycloakAdminService keycloakAdminService;
     @Autowired
-    public AuthController(RestTemplate restTemplate, Environment env) {
+    public AuthController(RestTemplate restTemplate, Environment env,KeycloakAdminService keycloakAdminService) {
         this.restTemplate = restTemplate;
         this.env = env;
+        this.keycloakAdminService=keycloakAdminService;
     }
 
     @Operation(
@@ -75,5 +77,11 @@ public class AuthController {
     @Operation(summary = "Ping endpoint", description = "Just returns OK")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("Auth service is up");
+    }
+    @PostMapping("/register")
+    @Operation(summary = "Register user with Keycloak", description = "Just returns OK")
+    public ResponseEntity<String> registerUser(@RequestBody UserRegistrationDto dto) {
+        keycloakAdminService.registerUser(dto);
+        return ResponseEntity.ok("User registered successfully");
     }
 }

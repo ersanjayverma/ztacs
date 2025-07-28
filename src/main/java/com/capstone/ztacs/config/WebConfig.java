@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/**")  // secure these endpoints
                 .excludePathPatterns(
-                    "/api/auth/get-token",                 // ✅ Exclude auth endpoints
+                    "/api/auth/**",                 // ✅ Exclude auth endpoints
                     "/swagger-ui.html",            // ✅ Sometimes needed separately
                     "/swagger-ui/**",
                     "/v3/api-docs/**",             // ✅ Full path

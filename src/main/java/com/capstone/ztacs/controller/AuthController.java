@@ -84,4 +84,13 @@ public class AuthController {
         keycloakAdminService.registerUser(dto);
         return ResponseEntity.ok("User registered successfully");
     }
+    @PostMapping("/refresh")
+     @Operation(
+        summary = "Get JWT token from Keycloak using refresh token",
+        description = "Authenticates with Keycloak and returns JWT token"
+    )
+    public ResponseEntity<TokenResponse> refreshToken(@RequestBody TokenRefreshRequest request) {
+        TokenResponse response = keycloakAdminService.refreshAccessToken(request);
+        return ResponseEntity.ok(response);
+    }
 }

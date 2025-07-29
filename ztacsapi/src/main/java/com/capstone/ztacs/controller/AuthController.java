@@ -1,4 +1,4 @@
-package com.capstone.ztacs.controller;
+package com.capstone.ztacsapi.controller;
 
 import com.capstone.ztacs.dto.*;
 import io.swagger.v3.oas.annotations.Operation;

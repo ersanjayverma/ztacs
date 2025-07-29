@@ -1,9 +1,9 @@
-package com.capstone.ztacs;
+package com.capstone.ztacsapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.capstone")
 public class ZtacsApplication {
 
 	public static void main(String[] args) {
@@ -11,3 +11,4 @@ public class ZtacsApplication {
 	}
 
 }
+	

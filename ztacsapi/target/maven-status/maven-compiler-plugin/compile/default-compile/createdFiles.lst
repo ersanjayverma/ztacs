@@ -1,2 +1,2 @@
-com/capstone/ztacs/ZtacsApplication.class
-com/capstone/ztacs/controller/AuthController.class
+com/capstone/ztacsapi/controller/AuthController.class
+com/capstone/ztacsapi/ZtacsApplication.class

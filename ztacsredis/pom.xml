@@ -52,7 +52,7 @@
             <version>2.5.0</version>
         </dependency>
 
-        <!-- JSON -->
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -82,11 +82,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Config Processor -->
+        <!-- Configuration Processor -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>3.4.7</version>
             <optional>true</optional>
         </dependency>
 
@@ -96,25 +95,23 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Shared Common Module -->
+        <!-- Common Module -->
         <dependency>
             <groupId>com.capstone</groupId>
             <artifactId>ztacscommon</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Java Compiler Plugin with -parameters -->
+            <!-- Java Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -140,11 +137,18 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot Plugin -->
+            <!-- ✅ Spring Boot Repackaging Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.4.7</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

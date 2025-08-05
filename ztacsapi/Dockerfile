@@ -5,7 +5,7 @@ FROM openjdk:21-jdk-slim
 ENV TZ=Asia/Kolkata
 
 # Copy built JAR from target folder
-ARG JAR_FILE=target/ztacs-0.0.1-SNAPSHOT.jar
+ARG JAR_FILE=target/ztacsapi-0.0.1-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
 
 # Expose Spring Boot port

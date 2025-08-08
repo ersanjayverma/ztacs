@@ -24,4 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
                     "/webjars/**"                  // If using webjars
                 );
     }
+        @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*") // Frontend URL
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
 }

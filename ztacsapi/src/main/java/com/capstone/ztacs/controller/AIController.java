@@ -25,58 +25,67 @@ public class AIController {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Operation(
-        summary = "Ask AI",
-        description = "Sends prompt to Ollama and returns response based on semantic similarity"
-    )
-    @PostMapping(value = "/ask", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> ask(@RequestBody String prompt) {
-        try {
-            float[] embedding = fetchEmbedding(prompt);
+    summary = "Ask AI",
+    description = "Sends prompt to Ollama and returns response based on semantic similarity"
+)
+@PostMapping(value = "/ask", produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<Map<String, String>> ask(@RequestBody String prompt) {
+    try {
+        float[] embedding = fetchEmbedding(prompt);
 
-            // Search top 5 similar prompts from Qdrant
-            List<String> similarHistory = searchQdrant(embedding);
+        // Search top 5 similar prompts from Qdrant
+        List<String> similarHistory = searchQdrant(embedding);
+        
+        String context = String.join("\n", similarHistory);
+String finalPrompt = 
+                "SYSTEM: Use the following historical context to assist your answer, but prioritize the user's current prompt.\n" +
+                "Context:\n" + context + "\n\n" +
+                "USER: " + prompt + "\n\n" +
+                "INSTRUCTION: Focus on the user's prompt more than the context. reply clearly and concisely.";
 
-            String context = String.join("\n", similarHistory);
-            String finalPrompt = context + "\n" + prompt;
+        // Call Ollama API
+        URL url = new URL("https://ai.blackhatbadshah.com/api/generate");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json");
 
-            // Call Ollama API
-            URL url = new URL("https://ai.blackhatbadshah.com/api/generate");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "Blackhatbadshah");
+        body.put("stream", false);
+        body.put("prompt", finalPrompt);
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("model", "Blackhatbadshah");
-            body.put("stream", false);
-            body.put("prompt", finalPrompt);
-
-            String json = mapper.writeValueAsString(body);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(json.getBytes());
-                os.flush();
-            }
-
-            StringBuilder rawResponse = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    rawResponse.append(line);
-                }
-            }
-
-            JsonNode node = mapper.readTree(rawResponse.toString());
-
-            if (node.has("response")) {
-                return ResponseEntity.ok().body(node.get("response").asText());
-            } else {
-                return ResponseEntity.status(502).body("Error: 'response' field not found.");
-            }
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        String json = mapper.writeValueAsString(body);
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(json.getBytes());
+            os.flush();
         }
+
+        StringBuilder rawResponse = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                rawResponse.append(line);
+            }
+        }
+
+        JsonNode node = mapper.readTree(rawResponse.toString());
+
+        if (node.has("response")) {
+            String aiResponse = node.get("response").asText();
+            saveMemory(finalPrompt);
+            saveMemory(aiResponse);
+            Map<String, String> responseMap = Map.of("response", aiResponse);
+            return ResponseEntity.ok(responseMap);
+        } else {
+            return ResponseEntity.status(502).body(Map.of("response", "Error: 'response' field not found."));
+        }
+
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().body(Map.of("response", "Error: " + e.getMessage()));
     }
+}
+
 
    @PostMapping("/save")
 public ResponseEntity<String> saveMemory(@RequestBody String prompt) {
@@ -95,7 +104,7 @@ public ResponseEntity<String> saveMemory(@RequestBody String prompt) {
         requestBody.put("points", List.of(point));
 
         // ✅ Use PUT method to match curl example
-        sendPut("http://vector.blackhatbadshah.com/collections/" + COLLECTION_NAME + "/points?wait=true", requestBody);
+        sendPut("https://vector.blackhatbadshah.com/collections/" + COLLECTION_NAME + "/points?wait=true", requestBody);
 
         return ResponseEntity.ok("Memory saved.");
     } catch (Exception e) {
@@ -110,7 +119,7 @@ public ResponseEntity<String> saveMemory(@RequestBody String prompt) {
         searchBody.put("top", 5);
         searchBody.put("with_payload", true);
 
-        JsonNode response = sendPost("http://vector.blackhatbadshah.com/collections/" + COLLECTION_NAME + "/points/search", searchBody);
+        JsonNode response = sendPost("https://vector.blackhatbadshah.com/collections/" + COLLECTION_NAME + "/points/search", searchBody);
 
         List<String> results = new ArrayList<>();
         for (JsonNode point : response.get("result")) {

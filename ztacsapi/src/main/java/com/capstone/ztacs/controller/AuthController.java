@@ -93,4 +93,5 @@ public class AuthController {
         TokenResponse response = keycloakAdminService.refreshAccessToken(request);
         return ResponseEntity.ok(response);
     }
+
 }

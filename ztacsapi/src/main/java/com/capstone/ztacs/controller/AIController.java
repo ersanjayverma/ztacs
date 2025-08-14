@@ -7,7 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import java.io.OutputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -15,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 import java.io.InputStream;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -28,9 +30,17 @@ public class AIController {
     summary = "Ask AI",
     description = "Sends prompt to Ollama and returns response based on semantic similarity"
 )
+
 @PostMapping(value = "/ask", produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<Map<String, String>> ask(@RequestBody String prompt) {
+public ResponseEntity<Map<String, String>> ask(HttpServletRequest request,@RequestBody String prompt) {
     try {
+
+        Claims claims = getClaimsFromRequest(request);
+        String userId = claims.getSubject(); // "sub"
+        String username = (String) claims.get("preferred_username");
+        String email = (String) claims.get("email");
+
+
         float[] embedding = fetchEmbedding(prompt);
 
         // Search top 5 similar prompts from Qdrant
@@ -38,6 +48,8 @@ public ResponseEntity<Map<String, String>> ask(@RequestBody String prompt) {
         
         String context = String.join("\n", similarHistory);
 String finalPrompt = 
+                "Identity: "+userId+
+                "NAME: "+username + "Email: "+email+
                 "SYSTEM: Use the following historical context to assist your answer, but prioritize the user's current prompt.\n" +
                 "Context:\n" + context + "\n\n" +
                 "USER: " + prompt + "\n\n" +
@@ -226,5 +238,8 @@ public ResponseEntity<String> saveMemory(@RequestBody String prompt) {
 
     return mapper.readTree(raw.toString());
 }
-
+@SuppressWarnings("unchecked")
+public Claims getClaimsFromRequest(HttpServletRequest request) {
+    return (Claims) request.getAttribute("claims");
+}
 }

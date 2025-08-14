@@ -2,12 +2,14 @@
   <div class="navbar-logo">Ztacs</div>
 
   <div class="navbar-links">
-    <a routerLink="/">Home</a>
-    <a routerLink="/dashboard">Dashboard</a>
-    <a routerLink="/about">About</a>
+    <a routerLink="/">BlackHatBadshah</a>
+
+
   </div>
 
   <div class="navbar-actions">
-    <button>Login</button>
+    <button (click)="handleAuthClick()">
+      {{ authService.isLoggedInSignal() ? 'Logout' : 'Login' }}
+    </button>
   </div>
 </div>

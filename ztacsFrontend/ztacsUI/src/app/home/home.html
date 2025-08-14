@@ -1,10 +1,16 @@
 <div #chatMessages class="chat-window">
-  <div *ngFor="let msg of messages()" [ngClass]="msg.sender === 'user' ? 'message user' : 'message bot'">
-    {{ msg.text }}
+  <div 
+    *ngFor="let msg of messages()" 
+    class="message" 
+    [class.user]="msg.sender === 'user'" 
+    [class.bot]="msg.sender === 'bot'">
+    <span [innerHTML]="msg.text"></span>
   </div>
 </div>
 
 <div class="input-area">
   <input [(ngModel)]="userInput" (keydown.enter)="sendMessage()" placeholder="Type your message..." />
   <button (click)="sendMessage()">Send</button>
+  <button (click)="startListening()">🎙</button>
 </div>
+

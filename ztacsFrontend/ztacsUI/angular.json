@@ -18,7 +18,13 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "src/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [
@@ -53,11 +59,11 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-               "host": "ztacs.blackhatbadshah.com",
+              "host": "ztacs.blackhatbadshah.com",
               "buildTarget": "ztacsUI:build:production"
             },
             "development": {
-               "host": "ztacs.blackhatbadshah.com",
+              "host": "blackhatbadshah.com",
               "buildTarget": "ztacsUI:build:development"
             }
           },
@@ -73,7 +79,13 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "src/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [

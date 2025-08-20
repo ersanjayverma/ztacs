@@ -1,16 +1,135 @@
-<div #chatMessages class="chat-window">
-  <div 
-    *ngFor="let msg of messages()" 
-    class="message" 
-    [class.user]="msg.sender === 'user'" 
-    [class.bot]="msg.sender === 'bot'">
-    <span [innerHTML]="msg.text"></span>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sanjay Verma — Senior Software Engineer</title>
+  <link rel="stylesheet" href="home.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="wrap">
+    <!-- top nav -->
+    <header class="nav">
+      <div class="brand">Sanjay Verma</div>
+      <nav class="nav-links">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <!-- hero -->
+    <section class="hero">
+      <div>
+        <div class="kicker"><span class="dot"></span><span>Hello</span></div>
+        <h1>I’m Sanjay — <br/>Software Developer</h1>
+        <div class="title">Senior Software Engineer • DevOps • AI Integrations</div>
+        <div class="cta">
+          <a class="btn primary" href="#contact">Got a project?</a>
+          <a class="btn" href="./../../../Resume_Sanjay_Verma_Sr_Engineer.pdf" download>Download Resume</a>
+        </div>
+      </div>
+      <div class="hero-figure">
+        <img src="https://media.licdn.com/dms/image/v2/D5603AQHR-BYO4djeCQ/profile-displayphoto-scale_400_400/B56ZiKOZ1VHQAo-/0/1754665690076?e=1758758400&v=beta&t=vBoG0tUj3szNAfJruG9lbf-EohAvpfz00AkHMejiO8o" alt="Sanjay Verma"> <!-- TODO: add your photo -->
+      </div>
+    </section>
+
+    <!-- skills -->
+    <section class="skills">
+      <span class="chip">C#</span>
+      <span class="chip">Java</span>
+      <span class="chip">JavaScript</span>
+      <span class="chip">Python</span>
+      <span class="chip">SQL</span>
+      <span class="chip">Spring Boot</span>
+      <span class="chip">.NET</span>
+      <span class="chip">Docker</span>
+      <span class="chip">Redis</span>
+      <span class="chip">CI/CD</span>
+      <span class="chip">Azure</span>
+      <span class="chip">Linux</span>
+    </section>
+
+    <!-- about + services -->
+    <section class="grid-2" id="about">
+      <div class="card about">
+        <h2>About Me</h2>
+        <p>
+          Results-driven Senior Software Engineer & DevOps Engineer with 6+ years of experience 
+          in .NET, Java, and AI-driven applications. Specialized in scalable systems, cloud architectures, 
+          and automation. Passionate about building intelligent, reliable software that scales.
+        </p>
+        <div class="stats">
+          <div class="stat"><div class="n">120+</div> Projects</div>
+          <div class="stat"><div class="n">95%</div> Satisfaction</div>
+          <div class="stat"><div class="n">6+</div> Years</div>
+        </div>
+      </div>
+      <div class="card services" id="services">
+        <h2>Services</h2>
+        <div class="row">
+          <div class="service"><h4>Web Dev</h4><p>Modern responsive websites</p></div>
+          <div class="service"><h4>App Dev</h4><p>Scalable backend & APIs</p></div>
+          <div class="service"><h4>AI & Cloud</h4><p>AI agents, CI/CD, DevOps</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- projects -->
+    <section class="card projects" id="projects">
+      <h2>Projects</h2>
+      <div class="list">
+        <div class="proj"><h4>Traffic Monitoring</h4><small>Docker migration, 80% efficiency boost</small></div>
+        <div class="proj"><h4>AI Redis Library</h4><small>Advanced caching + querying</small></div>
+        <div class="proj"><h4>Custom Queue</h4><small>Reliable Redis PUB/SUB</small></div>
+      </div>
+    </section>
+    <!-- Chat toggle button -->
+<div class="chat-toggle" (click)="isChatOpen = !isChatOpen">
+  💬
+</div>
+
+<!-- Popup Chat Window -->
+<div class="chat-popup" *ngIf="isChatOpen">
+  <div class="chat-header">
+    <span>Chat</span>
+    <button class="close-btn" (click)="isChatOpen = false">×</button>
+  </div>
+
+  <div #chatMessages class="chat-window">
+    <div 
+      *ngFor="let msg of messages()" 
+      class="message" 
+      [class.user]="msg.sender === 'user'" 
+      [class.bot]="msg.sender === 'bot'">
+      <span [innerHTML]="msg.text"></span>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input [(ngModel)]="userInput" (keydown.enter)="sendMessage()" placeholder="Type your message..." />
+    <button (click)="sendMessage()">Send</button>
+    <button (click)="startListening()">🎙</button>
   </div>
 </div>
 
-<div class="input-area">
-  <input [(ngModel)]="userInput" (keydown.enter)="sendMessage()" placeholder="Type your message..." />
-  <button (click)="sendMessage()">Send</button>
-  <button (click)="startListening()">🎙</button>
-</div>
+    <!-- contact -->
+    <section class="card" id="contact">
+      <h2>Contact</h2>
+      <p>📧 blackhatbadshah@outlook.com</p>
+      <p>📞 +91-8580400366</p>
+      <p>🔗 <a href="https://linkedin.com/in/ersanjayverma">LinkedIn</a></p>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Sanjay Verma</p>
+    </footer>
+  </div>
+</body>
+</html>
+
+
+
 

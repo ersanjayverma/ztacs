@@ -22,7 +22,7 @@ export class Home implements AfterViewInit {
   messages = signal<Message[]>([]);
   listening = false;
   recognition: any;
-
+  isChatOpen: boolean = false;
   @ViewChild('chatMessages') chatMessages!: ElementRef<HTMLDivElement>;
 
   constructor(private http: HttpClient, private sanitizer: DomSanitizer) {

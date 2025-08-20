@@ -1,43 +1,37 @@
-/* ==========================
-   CHAT WIDGET
-========================== */
-
-/* Chat toggle button */
+/* Floating toggle button */
 .chat-toggle {
   position: fixed;
   bottom: 20px;
   right: 20px;
   background: #0078ff;
   color: #fff;
-  font-size: 20px;
-  padding: 12px;
+  font-size: 22px;
+  padding: 14px;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  z-index: 2000;
 }
-
-/* Popup window */
 .chat-popup {
   position: fixed;
   bottom: 80px;
   right: 20px;
-  width: 300px;
-  max-height: 400px;
-  background: #fff;
-  border: 1px solid #ddd;
+  width: 320px;
+  max-height: 450px;
+  background: #141a22;
+  border: 1px solid #2d3748;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   z-index: 1000;
 }
 
-/* Header */
+/* header */
 .chat-header {
-  background: #0078ff;
+  background: #ff6b57;
   color: white;
-  padding: 8px;
+  padding: 8px 12px;
   font-weight: bold;
   display: flex;
   justify-content: space-between;
@@ -54,70 +48,68 @@
   cursor: pointer;
 }
 
-/* Messages container */
-.chat-messages {
+/* chat body - scrollable */
+.chat-window {
   flex: 1;
   padding: 10px;
-  overflow-y: auto;
-  background: #f9f9f9;
+  overflow-y: auto;   /* enable scroll */
+  background: #1f2937;
+  scroll-behavior: smooth; /* smooth auto-scroll */
 }
 
-/* Individual message bubble */
+/* messages */
 .message {
-  margin: 5px 0;
+  margin: 6px 0;
   padding: 8px 12px;
   border-radius: 8px;
   max-width: 80%;
-  word-wrap: break-word;
+  word-break: break-word;
   font-size: 0.9rem;
 }
 
-/* User bubble (right) */
 .message.user {
-  background: #0078ff;
-  color: white;
+  background: #ff6b57;
+  color: #fff;
   align-self: flex-end;
-  text-align: right;
 }
 
-/* Bot bubble (left) */
 .message.bot {
-  background: #eee;
-  color: #333;
+  background: #2d3748;
+  color: #f4f6f9;
   align-self: flex-start;
-  text-align: left;
 }
 
-/* Input area */
+/* input area */
 .input-area {
   display: flex;
   padding: 8px;
-  border-top: 1px solid #ddd;
-  background: #fff;
-  gap: 6px;
+  border-top: 1px solid #2d3748;
+  background: #141a22;
 }
 
 .input-area input {
   flex: 1;
   padding: 6px;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  outline: none;
+  border: 1px solid #333;
+  background: #1f2937;
+  color: #fff;
 }
 
 .input-area button {
+  margin-left: 4px;
   padding: 6px 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  background: #0078ff;
-  color: white;
+  background: #ff6b57;
+  color: #fff;
   font-weight: bold;
 }
-
 .input-area button:hover {
-  background: #0056b3;
+  background: #ff916a;
 }
+
 
 :root {
   --bg: #125ae9;          /* page background */

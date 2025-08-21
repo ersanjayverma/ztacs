@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/ai")
 @Tag(name = "AI Controller")
 public class AIController {
-
+    public record Piece(String type, String color) {}
     private static final String COLLECTION_NAME = "ztacs_memory";
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -242,64 +242,133 @@ public ResponseEntity<String> saveMemory(@RequestBody String prompt) {
 public Claims getClaimsFromRequest(HttpServletRequest request) {
     return (Claims) request.getAttribute("claims");
 }
-@PostMapping("/chessValidate")
-    public ResponseEntity<String> checkChessState(@RequestBody String state) {
-        ObjectMapper mapper = new ObjectMapper();
-        int whiteKings = 0;
-        int blackKings = 0;
 
-        try {
-            JsonNode root = mapper.readTree(state);
+@PostMapping("chessNextMove")
+public ResponseEntity<Map<String, Object>> getNextMove(@RequestBody Map<String, Object> request) {
+    try {
+        List<Map<String, Object>> pieces = (List<Map<String, Object>>) request.get("pieces");
+        Map<String, String> lastMove = (Map<String, String>) request.get("lastMove");
 
-            if (!root.isArray()) {
-                return ResponseEntity.badRequest().body("Invalid JSON format: expected an array.");
-            }
+        // Build board array
+        Piece[][] board = new Piece[8][8];
+        for (Map<String, Object> pieceData : pieces) {
+            Map<String, String> pieceInfo = (Map<String, String>) pieceData.get("piece");
+            int row = (int) pieceData.get("row");
+            int col = (int) pieceData.get("col");
 
-            for (JsonNode node : root) {
-                JsonNode pieceNode = node.get("piece");
-                int row = node.get("row").asInt();
-                int col = node.get("col").asInt();
+            board[row][col] = new Piece(pieceInfo.get("type"), pieceInfo.get("color"));
+        }
 
-                if (pieceNode == null || !pieceNode.has("type") || !pieceNode.has("color")) {
-                    return ResponseEntity.badRequest().body("Missing piece data.");
-                }
+        String turn = getCurrentTurn(board, lastMove);
+        String fen = buildFEN(board, turn);
 
-                String type = pieceNode.get("type").asText();
-                String color = pieceNode.get("color").asText();
+        //  Prompt AI for best move
+        String prompt = String.format(
+            "You are a chess engine. Analyze this board position and suggest the best move for %s.\n" +
+            "FEN: %s\n\n" +
+            "Reply ONLY with the move in algebraic notation (like e2e4 or g1f3), nothing else.",
+            turn,
+            fen
+        );
 
-                if (!isValidPiece(type) || !isValidColor(color)) {
-                    return ResponseEntity.badRequest().body("Invalid piece type or color.");
-                }
+        String aiMove = callAI(prompt);
 
-                if (row < 0 || row > 7 || col < 0 || col > 7) {
-                    return ResponseEntity.badRequest().body("Invalid board position.");
-                }
+        Map<String, Object> response = new HashMap<>();
+        response.put("fen", fen);
+        response.put("turn", turn);
+        response.put("aiMove", aiMove.trim());
 
-                if ("king".equals(type)) {
-                    if ("white".equals(color)) whiteKings++;
-                    else if ("black".equals(color)) blackKings++;
-                }
-            }
+        return ResponseEntity.ok(response);
 
-            if (whiteKings != 1 || blackKings != 1) {
-                return ResponseEntity.badRequest().body("Board must have exactly 1 white king and 1 black king.");
-            }
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "error", "Error: " + e.getMessage()
+        ));
+    }
+}
+private String callAI(String prompt) throws Exception {
+    URL url = new URL("https://ai.blackhatbadshah.com/api/generate");
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    conn.setRequestMethod("POST");
+    conn.setDoOutput(true);
+    conn.setRequestProperty("Content-Type", "application/json");
 
-            return ResponseEntity.ok("Board state is valid.");
+    Map<String, Object> body = new HashMap<>();
+    body.put("model", "Blackhatbadshah");
+    body.put("stream", false);
+    body.put("prompt", prompt);
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid JSON format or server error: " + e.getMessage());
+    String json = mapper.writeValueAsString(body);
+
+    try (OutputStream os = conn.getOutputStream()) {
+        os.write(json.getBytes());
+        os.flush();
+    }
+
+    StringBuilder raw = new StringBuilder();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            raw.append(line);
         }
     }
 
-    private boolean isValidPiece(String type) {
-        return switch (type) {
-            case "pawn", "rook", "knight", "bishop", "queen", "king" -> true;
-            default -> false;
-        };
-    }
+    JsonNode node = mapper.readTree(raw.toString());
 
-    private boolean isValidColor(String color) {
-        return "white".equals(color) || "black".equals(color);
+    if (node.has("response")) {
+        return node.get("response").asText();
+    } else {
+        throw new RuntimeException("AI response missing 'response' field.");
     }
 }
+// Determine whose turn it is
+private String getCurrentTurn(Piece[][] board, Map<String, String> lastMove) {
+    return (lastMove == null || lastMove.get("to") == null) ? "white" : "black";
+}
+// Convert piece to FEN character
+private char toFENChar(Piece piece) {
+    Map<String, Character> map = Map.of(
+        "pawn", 'p',
+        "rook", 'r',
+        "knight", 'n',
+        "bishop", 'b',
+        "queen", 'q',
+        "king", 'k'
+    );
+    char c = map.getOrDefault(piece.type(), '?');
+    return piece.color().equals("white") ? Character.toUpperCase(c) : c;
+}
+
+private String buildFEN(AIController.Piece[][] board, String turn) {
+    StringBuilder fen = new StringBuilder();
+
+    for (int row = 0; row < 8; row++) {
+        int empty = 0;
+        for (int col = 0; col < 8; col++) {
+            AIController.Piece piece = board[row][col];
+            if (piece == null) {
+                empty++;
+            } else {
+                if (empty > 0) {
+                    fen.append(empty);
+                    empty = 0;
+                }
+                fen.append(toFENChar(piece));
+            }
+        }
+        if (empty > 0) {
+            fen.append(empty);
+        }
+        if (row < 7) {
+            fen.append('/');
+        }
+    }
+
+    return fen + " " + (turn.equals("white") ? "w" : "b") + " - - 0 1";
+}
+
+
+
+}
+
+

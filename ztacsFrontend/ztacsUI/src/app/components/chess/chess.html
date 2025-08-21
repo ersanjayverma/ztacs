@@ -1,0 +1,27 @@
+<div class="chessboard-wrapper">
+  <div class="chessboard">
+    <ng-container *ngFor="let row of board(); let rowIndex = index">
+      <ng-container *ngFor="let tile of row; let colIndex = index">
+        <div
+          class="tile"
+          [class.white]="isWhiteSquare(rowIndex, colIndex)"
+          [class.black]="!isWhiteSquare(rowIndex, colIndex)"
+          (drop)="onDrop(rowIndex, colIndex)"
+          (dragover)="$event.preventDefault()"
+        >
+          <div
+  *ngIf="tile"
+  class="piece"
+  [draggable]="true"
+  (dragstart)="onDragStart(rowIndex, colIndex)"
+>
+  {{ getPieceSymbol(tile.type, tile.color) }}
+</div>
+
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>
+
+<button (click)="sendBoardState()">Send Board State</button>

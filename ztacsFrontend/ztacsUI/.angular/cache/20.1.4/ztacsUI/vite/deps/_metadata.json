@@ -1,61 +1,67 @@
 {
-  "hash": "ba7abed0",
-  "configHash": "ff9d0f71",
-  "lockfileHash": "58722235",
-  "browserHash": "fad46ea5",
+  "hash": "19ca7195",
+  "configHash": "e21c9baa",
+  "lockfileHash": "588ba180",
+  "browserHash": "05ea7d2e",
   "optimized": {
+    "@angular/cdk/drag-drop": {
+      "src": "../../../../../../node_modules/@angular/cdk/fesm2022/drag-drop.mjs",
+      "file": "@angular_cdk_drag-drop.js",
+      "fileHash": "d6682a31",
+      "needsInterop": false
+    },
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "2b522338",
+      "fileHash": "cf11dbe1",
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
-      "fileHash": "a1a304ff",
+      "fileHash": "7c314df9",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "cae760b2",
+      "fileHash": "d6e9cd86",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "a8645398",
+      "fileHash": "59d06611",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "535f6b28",
+      "fileHash": "74c25031",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "fbbf6092",
+      "fileHash": "cc4d818f",
       "needsInterop": false
     },
     "marked": {
       "src": "../../../../../../node_modules/marked/lib/marked.esm.js",
       "file": "marked.js",
-      "fileHash": "fe3566da",
+      "fileHash": "5ab36b1e",
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
-      "fileHash": "ae5479df",
+      "fileHash": "2bd7f40b",
       "needsInterop": false
     },
     "rxjs/operators": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
       "file": "rxjs_operators.js",
-      "fileHash": "cd4337ad",
+      "fileHash": "9697891c",
       "needsInterop": false
     }
   },

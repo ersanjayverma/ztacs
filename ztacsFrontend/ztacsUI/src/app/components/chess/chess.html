@@ -1,3 +1,8 @@
+<!-- Status / Alerts -->
+<div *ngIf="status()" class="status-banner">
+  {{ status() }}
+</div>
+
 <div class="chessboard-wrapper">
   <div class="chessboard">
     <ng-container *ngFor="let row of board(); let rowIndex = index">
@@ -24,3 +29,8 @@
   </div>
 </div>
 
+<!-- Loader overlay -->
+<div *ngIf="isLoading()" class="loader-overlay">
+  <div class="spinner"></div>
+  <div>Thinking…</div>
+</div>

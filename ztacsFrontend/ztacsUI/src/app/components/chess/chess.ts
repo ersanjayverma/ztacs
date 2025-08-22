@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Chess, PieceSymbol, Color, Square } from 'chess.js';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { Chess, PieceSymbol, Color } from 'chess.js';
 
 interface Piece {
   type: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
@@ -23,6 +23,10 @@ export class ChessComponent {
   lastMove: { from: string; to: string } | null = null;
 
   currentTurn = signal<'white' | 'black'>('white');
+
+  // NEW: UI state
+  isLoading = signal(false);
+  status = signal<string | null>(null); // "Check on Black", "Checkmate. White wins.", etc.
 
   constructor(private http: HttpClient) {
     this.initBoard();
@@ -49,6 +53,7 @@ export class ChessComponent {
     }
 
     this.board.set(newBoard);
+    this.updateStatusFromFEN(this.buildFEN(newBoard, this.currentTurn()));
   }
 
   getPieceSymbol(type: Piece['type'], color: Piece['color']): string {
@@ -74,12 +79,7 @@ export class ChessComponent {
 
   mapTypeToPieceSymbol(type: Piece['type']): PieceSymbol {
     const map: Record<Piece['type'], PieceSymbol> = {
-      pawn: 'p',
-      rook: 'r',
-      knight: 'n',
-      bishop: 'b',
-      queen: 'q',
-      king: 'k'
+      pawn: 'p', rook: 'r', knight: 'n', bishop: 'b', queen: 'q', king: 'k'
     };
     return map[type];
   }
@@ -90,52 +90,35 @@ export class ChessComponent {
 
   onDragStart(row: number, col: number): void {
     const piece = this.board()[row][col];
-    if (!piece || piece.color !== this.currentTurn()) {
-      return; // Prevent dragging if it's not this player's turn
-    }
+    if (!piece || piece.color !== this.currentTurn()) return;
     this.dragRow = row;
     this.dragCol = col;
   }
 
-  buildFEN(board: (Piece | null)[][], turn: 'white' | 'black'): string {
-    const pieceToFenChar = (p: Piece) => {
-      const map: Record<Piece['type'], string> = {
-        pawn: 'p',
-        rook: 'r',
-        knight: 'n',
-        bishop: 'b',
-        queen: 'q',
-        king: 'k',
-      };
-      let char = map[p.type];
-      return p.color === 'white' ? char.toUpperCase() : char;
+buildFEN(board: (Piece | null)[][], turn: 'white' | 'black' = this.currentTurn()): string {
+  const pieceToFenChar = (p: Piece) => {
+    const map: Record<Piece['type'], string> = {
+      pawn: 'p', rook: 'r', knight: 'n', bishop: 'b', queen: 'q', king: 'k',
     };
+    const char = map[p.type];
+    return p.color === 'white' ? char.toUpperCase() : char;
+  };
 
-    let fenRows: string[] = [];
-
+    const fenRows: string[] = [];
     for (let r = 0; r < 8; r++) {
       let fenRow = '';
-      let emptyCount = 0;
-
+      let empty = 0;
       for (let c = 0; c < 8; c++) {
         const piece = board[r][c];
-        if (!piece) {
-          emptyCount++;
-        } else {
-          if (emptyCount > 0) {
-            fenRow += emptyCount;
-            emptyCount = 0;
-          }
-          fenRow += pieceToFenChar(piece);
-        }
+        if (!piece) { empty++; continue; }
+        if (empty > 0) { fenRow += empty; empty = 0; }
+        fenRow += pieceToFenChar(piece);
       }
-
-      if (emptyCount > 0) fenRow += emptyCount;
+      if (empty > 0) fenRow += empty;
       fenRows.push(fenRow);
     }
 
     const fenBoard = fenRows.join('/');
-
     const castling = '-';
     const enPassant = '-';
     const halfmove = '0';
@@ -149,97 +132,140 @@ export class ChessComponent {
     const piece = currentBoard[this.dragRow]?.[this.dragCol];
     if (!piece || (this.dragRow === row && this.dragCol === col)) return;
 
-    const chess = new Chess();
-
-    // Build and load FEN with current board and current turn
-    const fen = this.buildFEN(currentBoard, this.currentTurn());
-    chess.load(fen);
+    const fenBefore = this.buildFEN(currentBoard, this.currentTurn());
+    const chess = new Chess(fenBefore);
 
     const from = this.convertToSquare(this.dragRow, this.dragCol);
     const to = this.convertToSquare(row, col);
 
-    // Attempt move with promotion always queen for simplicity
+    // Try move (promotion default queen for simplicity)
     const move = chess.move({ from, to, promotion: 'q' });
-
     if (!move) {
       console.warn('Illegal move:', from, '→', to);
       return;
     }
 
-    // Update board with the move
+    // Apply on UI board
     currentBoard[row][col] = piece;
     currentBoard[this.dragRow][this.dragCol] = null;
     this.board.set(currentBoard);
-
     this.lastMove = { from, to };
 
     // Switch turn after valid move
     this.currentTurn.set(this.currentTurn() === 'white' ? 'black' : 'white');
-     this.makeCpuMove();
+
+    // Update status after player's move
+    const fenAfter = this.buildFEN(this.board(), this.currentTurn());
+    this.updateStatusFromFEN(fenAfter);
+
+    // If game not ended, ask CPU
+    const g = new Chess(fenAfter);
+    if (!g.isCheckmate() && !g.isStalemate() && !g.isDraw()) {
+      this.makeCpuMove();
+    }
   }
 
- 
-  
   makeCpuMove() {
-  const board = this.board();
-  const state: { piece: Piece; row: number; col: number }[] = [];
+    const fen = this.buildFEN(this.board(), this.currentTurn());
+    const token = localStorage.getItem('jwt_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token ?? ''}`,
+      'Content-Type': 'application/json'
+    });
 
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const piece = board[row][col];
-      if (piece) {
-        state.push({ piece, row, col });
+    // Loader ON
+    this.isLoading.set(true);
+
+    this.http.post(
+      'https://api.blackhatbadshah.com/api/ai/chessNextMove',
+      { validMoves: new Chess(fen).moves(), fen, lastMove: this.lastMove },
+      { headers }
+    ).subscribe({
+      next: (response: any) => {
+        const aiMove = (response?.aiMove || '').trim().toLowerCase();
+        if (!/^[a-h][1-8][a-h][1-8]([qrbn])?$/.test(aiMove)) {
+          console.warn('Invalid AI move format:', aiMove);
+          return;
+        }
+
+        const from = aiMove.slice(0, 2);
+        const to = aiMove.slice(2, 4);
+        const promotion = aiMove.length === 5 ? (aiMove[4] as PieceSymbol) : undefined;
+
+        const chess = new Chess(fen);
+        const legalMove = chess.move({ from, to, promotion: promotion ?? 'q' });
+        if (!legalMove) {
+          console.warn('AI suggested illegal move:', { from, to, promotion });
+          return;
+        }
+
+        const fromCoords = this.squareToCoords(from);
+        const toCoords = this.squareToCoords(to);
+
+        const currentBoard = this.board().map(r => [...r]);
+        const movingPiece = currentBoard[fromCoords.row]?.[fromCoords.col];
+        if (!movingPiece) {
+          console.warn('No piece at', from, fromCoords);
+          return;
+        }
+
+        // Apply the move
+        currentBoard[toCoords.row][toCoords.col] = movingPiece;
+        currentBoard[fromCoords.row][fromCoords.col] = null;
+        this.board.set(currentBoard);
+        this.lastMove = { from, to };
+
+        // Switch turn back to player
+        this.currentTurn.set(this.currentTurn() === 'white' ? 'black' : 'white');
+
+        // Update status after CPU move
+        const newFen = this.buildFEN(this.board(), this.currentTurn());
+        this.updateStatusFromFEN(newFen);
+      },
+      error: (error: any) => {
+        console.error('API Error:', error);
+      },
+      complete: () => {
+        // Loader OFF
+        this.isLoading.set(false);
       }
-    }
+    });
   }
 
-  this.http.post('https://api.blackhatbadshah.com/api/ai/chessNextMove', {
-    pieces: state,
-    lastMove: this.lastMove
-  }).subscribe({
-    next: (response: any) => {
-      const move: { from: string; to: string } = {
-        from: response?.aiMove?.slice(0, 2),
-        to: response?.aiMove?.slice(2, 4)
-      };
-
-      if (!move.from || !move.to) {
-        console.warn('Invalid AI move:', response);
-        return;
-      }
-
-      const fromCoords = this.squareToCoords(move.from);
-      const toCoords = this.squareToCoords(move.to);
-
-      const currentBoard = this.board().map(r => [...r]);
-      const movingPiece = currentBoard[fromCoords.row]?.[fromCoords.col];
-
-      if (!movingPiece) {
-        console.warn('No piece found at', move.from);
-        return;
-      }
-
-      // Apply the move
-      currentBoard[toCoords.row][toCoords.col] = movingPiece;
-      currentBoard[fromCoords.row][fromCoords.col] = null;
-
-      this.board.set(currentBoard);
-      this.lastMove = move;
-
-      // Switch turn back to player
-      this.currentTurn.set(this.currentTurn() === 'white' ? 'black' : 'white');
-    },
-    error: (error: any) => {
-      console.error('API Error:', error);
-    }
-  });
-
+  squareToCoords(square: string): { row: number; col: number } {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const col = files.indexOf(square[0]);
+    const row = 8 - parseInt(square[1], 10);
+    return { row, col };
   }
-squareToCoords(square: string): { row: number; col: number } {
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const col = files.indexOf(square[0]);
-  const row = 8 - parseInt(square[1], 10);
-  return { row, col };
+
+  // NEW: Status evaluator using chess.js
+  private updateStatusFromFEN(fen: string) {
+  const game = new Chess(fen);
+
+  if (game.isCheckmate()) {
+    const loser = game.turn() === 'w' ? 'White' : 'Black'; // side to move is checkmated
+    const winner = loser === 'White' ? 'Black' : 'White';
+    this.status.set(`Checkmate. ${winner} wins.`);
+    return;
+  }
+
+  if (game.isStalemate()) {
+    this.status.set('Stalemate. Draw.');
+    return;
+  }
+
+  if (game.isDraw()) {
+    this.status.set('Draw.');
+    return;
+  }
+
+  if (game.isCheck()) {
+    const side = game.turn() === 'w' ? 'White' : 'Black'; // side to move is in check
+    this.status.set(`Check on ${side}.`);
+    return;
+  }
+
+  this.status.set(null);
 }
-
 }

@@ -3,29 +3,51 @@
   {{ status() }}
 </div>
 
-<div class="chessboard-wrapper">
-  <div class="chessboard">
-    <ng-container *ngFor="let row of board(); let rowIndex = index">
-      <ng-container *ngFor="let tile of row; let colIndex = index">
-        <div
-          class="tile"
-          [class.white]="isWhiteSquare(rowIndex, colIndex)"
-          [class.black]="!isWhiteSquare(rowIndex, colIndex)"
-          (drop)="onDrop(rowIndex, colIndex)"
-          (dragover)="$event.preventDefault()"
-        >
+<div class="chess-container">
+  <!-- Board -->
+  <div class="chessboard-wrapper">
+    <div class="chessboard">
+      <ng-container *ngFor="let row of board(); let rowIndex = index">
+        <ng-container *ngFor="let tile of row; let colIndex = index">
           <div
-  *ngIf="tile"
-  class="piece"
-  [draggable]="true"
-  (dragstart)="onDragStart(rowIndex, colIndex)"
->
-  {{ getPieceSymbol(tile.type, tile.color) }}
-</div>
-
-        </div>
+            class="tile"
+            [class.white]="isWhiteSquare(rowIndex, colIndex)"
+            [class.black]="!isWhiteSquare(rowIndex, colIndex)"
+            (drop)="onDrop(rowIndex, colIndex)"
+            (dragover)="$event.preventDefault()"
+          >
+            <div
+              *ngIf="tile"
+              class="piece"
+              [draggable]="true"
+              (dragstart)="onDragStart(rowIndex, colIndex)"
+            >
+              {{ getPieceSymbol(tile.type, tile.color) }}
+            </div>
+          </div>
+        </ng-container>
       </ng-container>
-    </ng-container>
+    </div>
+  </div>
+
+  <!-- Right panel: score + moves -->
+  <div class="score-panel">
+    <h3>Evaluation</h3>
+    <div class="eval-badge">{{ advantageText() }}</div>
+
+    <h3>Moves & Scores</h3>
+    <div class="moves-table">
+      <div class="moves-header">
+        <span>#</span><span>Side</span><span>Move</span><span>UCI</span><span>Eval</span>
+      </div>
+        <div class="moves-row" *ngFor="let m of movesLog(); trackBy: trackByPly">
+          <span>{{ m.ply }}</span>
+          <span>{{ m.side }}</span>
+          <span>{{ m.san }}</span>
+          <span>{{ m.uci }}</span>
+          <span [class.pos]="m.evalCp>0" [class.neg]="m.evalCp<0">{{ formatEval(m.evalCp) }}</span>
+        </div>
+    </div>
   </div>
 </div>
 

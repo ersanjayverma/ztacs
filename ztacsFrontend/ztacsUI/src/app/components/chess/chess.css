@@ -69,3 +69,67 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+.chess-container {
+  display: flex;
+  gap: 20px;
+}
+
+.chessboard-wrapper {
+  flex: 1;
+}
+
+.score-panel {
+  width: 200px;
+  padding: 10px;
+  border-left: 2px solid #ccc;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.score-panel h3 {
+  margin-top: 0;
+}
+.chess-container { display: flex; gap: 20px; align-items: flex-start; }
+.chessboard-wrapper { flex: 1; }
+
+.score-panel {
+  width: 280px;
+  padding: 12px;
+  border-left: 2px solid #ddd;
+  background: #fafafa;
+  border-radius: 8px;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.score-panel h3 { margin: 10px 0 6px; }
+
+.eval-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eee;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.moves-table { display: grid; gap: 4px; }
+.moves-header, .moves-row {
+  display: grid;
+  grid-template-columns: 36px 60px 1fr 70px 56px;
+  gap: 6px;
+  align-items: center;
+}
+.moves-header {
+  font-weight: 700;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
+  position: sticky;
+  top: 0;
+  background: #fafafa;
+  z-index: 1;
+}
+
+.moves-row { padding: 2px 0; border-bottom: 1px dashed #eee; }
+.moves-row .pos { color: #1a7f37; font-variant-numeric: tabular-nums; }
+.moves-row .neg { color: #b00020; font-variant-numeric: tabular-nums; }
